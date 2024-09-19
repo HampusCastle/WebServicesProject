@@ -37,4 +37,4 @@ out/
 .vscode/
 
 # Ignorera SSL-certifikatet
-/resources/mykeystore.p12
+/src/main/resources/mykeystore.p12
