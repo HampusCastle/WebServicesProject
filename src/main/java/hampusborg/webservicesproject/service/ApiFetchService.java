@@ -30,7 +30,6 @@ public class ApiFetchService {
                             apiUserDto.setLastName(user.getName().getLast());
                             apiUserDto.setEmail(user.getEmail());
                             apiUserDto.setUsername(user.getLogin().getUsername());
-                            apiUserDto.setPassword(user.getLogin().getPassword());
                             apiUserDto.setPhone(user.getPhone());
                             apiUserDto.setAddress(user.getLocation().getStreet().getName() + ", " + user.getLocation().getCity());
                             apiUserDto.setPhotoUrl(user.getPicture().getLarge());

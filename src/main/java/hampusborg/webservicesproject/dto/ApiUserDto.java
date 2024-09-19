@@ -10,7 +10,6 @@ public class ApiUserDto {
     private String lastName;
     private String email;
     private String username;
-    private String password;
     private String phone;
     private String address;
     private String photoUrl;
