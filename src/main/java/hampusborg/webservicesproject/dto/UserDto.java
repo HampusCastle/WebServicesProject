@@ -1,4 +1,4 @@
-package hampusborg.webserviceproject.dto;
+package hampusborg.webservicesproject.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
