@@ -84,4 +84,24 @@ public class UserService {
             throw new PhotoUploadException("Failed to upload photo: " + e.getMessage());
         }
     }
+    @Transactional
+    public MyUser updateUser(MyUser userToUpdate) {
+
+        MyUser existingUser = userRepository.findById(userToUpdate.getId())
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userToUpdate.getId()));
+
+        existingUser.setName(userToUpdate.getName());
+        existingUser.setEmail(userToUpdate.getEmail());
+        existingUser.setPhone(userToUpdate.getPhone());
+        existingUser.setAddress(userToUpdate.getAddress());
+        existingUser.setUsername(userToUpdate.getUsername());
+        if (userToUpdate.getPassword() != null && !userToUpdate.getPassword().isEmpty()) {
+            existingUser.setPassword(userToUpdate.getPassword());
+        }
+        existingUser.setPhotoUrl(userToUpdate.getPhotoUrl());
+        existingUser.setStatus(userToUpdate.getStatus());
+        existingUser.setRole(userToUpdate.getRole());
+
+        return userRepository.save(existingUser);
+    }
 }

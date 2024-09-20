@@ -84,4 +84,19 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to fetch contacts from API: " + e.getMessage());
         }
     }
+    @PutMapping("/users/{id}")
+    public ResponseEntity<UserDto> updateUser(
+            @PathVariable String id,
+            @RequestBody UserDto userDTO) {
+        try {
+            MyUser myUser = UserMapper.fromDto(userDTO);
+            myUser.setId(id);
+            MyUser updatedUser = userService.updateUser(myUser);
+            return ResponseEntity.ok(UserMapper.toDto(updatedUser));
+        } catch (Exception e) {
+            log.error("Error updating user: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
 }

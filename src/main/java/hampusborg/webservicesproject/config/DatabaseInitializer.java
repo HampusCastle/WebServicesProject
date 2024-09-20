@@ -42,20 +42,8 @@ public class DatabaseInitializer {
         admin.setRole("Admin");
         userRepository.save(admin);
 
-        MyUser user = new MyUser();
-        user.setName("user");
-        user.setEmail("user@gmail.com");
-        user.setUsername("user");
-        user.setPassword(passwordEncoder.encode("user123"));
-        user.setPhotoUrl(postConstructPhotos.fetchDefaultUserPhoto());
-        user.setPhone("0987654321");
-        user.setAddress("User State");
-        user.setStatus("Active");
-        user.setRole("User");
-        userRepository.save(user);
-
         userService.fetchContactsFromApi();
 
-        log.info("Admin and default user initialized");
+        log.info("Admin user initialized");
     }
 }
