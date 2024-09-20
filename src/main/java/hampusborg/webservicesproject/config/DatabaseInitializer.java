@@ -39,7 +39,7 @@ public class DatabaseInitializer {
         admin.setPhone("1234567890");
         admin.setAddress("Admin State");
         admin.setStatus("Active");
-        admin.setRole("ROLE_ADMIN");
+        admin.setRole("Admin");
         userRepository.save(admin);
 
         MyUser user = new MyUser();
@@ -51,7 +51,7 @@ public class DatabaseInitializer {
         user.setPhone("0987654321");
         user.setAddress("User State");
         user.setStatus("Active");
-        user.setRole("ROLE_USER");
+        user.setRole("User");
         userRepository.save(user);
 
         userService.fetchContactsFromApi();
