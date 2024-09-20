@@ -1,6 +1,5 @@
 package hampusborg.webservicesproject.mapper;
 
-
 import hampusborg.webservicesproject.dto.ApiUserDto;
 import hampusborg.webservicesproject.model.MyUser;
 
@@ -12,6 +11,7 @@ public class ApiUserMapper {
         myUser.setEmail(dto.getEmail());
         myUser.setPhone(dto.getPhone());
         myUser.setUsername(dto.getUsername());
+        myUser.setPassword(dto.getPassword());
         myUser.setAddress(dto.getAddress());
         myUser.setPhotoUrl(dto.getPhotoUrl());
         return myUser;

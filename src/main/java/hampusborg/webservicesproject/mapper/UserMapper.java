@@ -1,6 +1,5 @@
 package hampusborg.webservicesproject.mapper;
 
-
 import hampusborg.webservicesproject.dto.UserDto;
 import hampusborg.webservicesproject.model.MyUser;
 
