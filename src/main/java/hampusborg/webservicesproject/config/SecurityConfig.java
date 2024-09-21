@@ -29,9 +29,8 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeRequests(authorizeRequests ->
                         authorizeRequests
-                                .requestMatchers("/home/**").permitAll()
-                                .requestMatchers("/login", "/logout").permitAll()
-                                .anyRequest().authenticated()
+                                .requestMatchers("/login", "/logout", "/auth/check").permitAll()
+                                .anyRequest().hasAuthority("Admin")
                 )
                 .formLogin(formLogin ->
                         formLogin
@@ -53,9 +52,10 @@ public class SecurityConfig {
                 )
                 .sessionManagement(sessionManagement ->
                         sessionManagement
-                                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                                .sessionCreationPolicy(SessionCreationPolicy.NEVER)
                 )
                 .httpBasic(withDefaults());
+
         return http.build();
     }
 

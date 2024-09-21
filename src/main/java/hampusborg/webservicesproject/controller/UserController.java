@@ -65,7 +65,7 @@ public class UserController {
     }
 
     @PostMapping("/photo")
-    public ResponseEntity<String> uploadPhoto(@RequestParam("id") String id, @RequestParam("file") MultipartFile file) throws Exception {
+    public ResponseEntity<String> uploadPhoto(@RequestParam("id") String id, @RequestParam("file") MultipartFile file) {
         String photoUrl = userService.uploadPhoto(id, file);
         return ResponseEntity.ok(photoUrl);
     }
@@ -94,7 +94,7 @@ public class UserController {
             MyUser updatedUser = userService.updateUser(myUser);
             return ResponseEntity.ok(UserMapper.toDto(updatedUser));
         } catch (Exception e) {
-            log.error("Error updating user: {}", e.getMessage(), e);
+            log.error("Error updating user: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
