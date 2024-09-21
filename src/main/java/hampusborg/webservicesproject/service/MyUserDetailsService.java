@@ -2,6 +2,7 @@ package hampusborg.webservicesproject.service;
 
 import hampusborg.webservicesproject.model.MyUser;
 import hampusborg.webservicesproject.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -11,23 +12,24 @@ import org.springframework.stereotype.Service;
 import java.util.Collections;
 
 @Service
+@RequiredArgsConstructor
 public class MyUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
 
-    public MyUserDetailsService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
-
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        MyUser myUser = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return userRepository.findByUsername(username)
+                .map(this::mapToUserDetails)
+                .orElseThrow(() -> new UsernameNotFoundException("User with username '" + username + "' not found"));
+    }
 
+
+    private UserDetails mapToUserDetails(MyUser myUser) {
         return new org.springframework.security.core.userdetails.User(
-                myUser.getUsername(),
-                myUser.getPassword(),
-                Collections.singleton(new SimpleGrantedAuthority(myUser.getRole()))
+                myUser.username(),
+                myUser.password(),
+                Collections.singleton(new SimpleGrantedAuthority(myUser.role()))
         );
     }
 }

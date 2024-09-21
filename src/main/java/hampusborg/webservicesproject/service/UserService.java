@@ -41,10 +41,10 @@ public class UserService {
 
             Random random = new Random();
             for (ApiUserDto dto : apiUserDtos) {
-                MyUser myUser = ApiUserMapper.fromApiUserDto(dto);
-                myUser.setPassword(passwordEncoder.encode(dto.getPassword() != null ? dto.getPassword() : "defaultPassword"));
-                myUser.setStatus(random.nextBoolean() ? "Active" : "Inactive");
-                myUser.setRole("user");
+                MyUser myUser = ApiUserMapper.fromApiUserDto(dto)
+                        .password(passwordEncoder.encode(dto.getPassword() != null ? dto.getPassword() : "defaultPassword"))
+                        .status(random.nextBoolean() ? "Active" : "Inactive")
+                        .role("user");
                 userRepository.save(myUser);
             }
         } catch (Exception e) {
@@ -77,30 +77,32 @@ public class UserService {
         MyUser myUser = getUser(id);
         try {
             String photoUrl = photoService.savePhoto(id, file);
-            myUser.setPhotoUrl(photoUrl);
+            myUser.photoUrl(photoUrl);
             userRepository.save(myUser);
             return photoUrl;
         } catch (RuntimeException e) {
             throw new PhotoUploadException("Failed to upload photo: " + e.getMessage());
         }
     }
+
     @Transactional
     public MyUser updateUser(MyUser userToUpdate) {
+        MyUser existingUser = userRepository.findById(userToUpdate.id())
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userToUpdate.id()));
 
-        MyUser existingUser = userRepository.findById(userToUpdate.getId())
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + userToUpdate.getId()));
+        existingUser
+                .name(userToUpdate.name())
+                .email(userToUpdate.email())
+                .phone(userToUpdate.phone())
+                .address(userToUpdate.address())
+                .username(userToUpdate.username())
+                .photoUrl(userToUpdate.photoUrl())
+                .status(userToUpdate.status())
+                .role(userToUpdate.role());
 
-        existingUser.setName(userToUpdate.getName());
-        existingUser.setEmail(userToUpdate.getEmail());
-        existingUser.setPhone(userToUpdate.getPhone());
-        existingUser.setAddress(userToUpdate.getAddress());
-        existingUser.setUsername(userToUpdate.getUsername());
-        if (userToUpdate.getPassword() != null && !userToUpdate.getPassword().isEmpty()) {
-            existingUser.setPassword(userToUpdate.getPassword());
+        if (userToUpdate.password() != null && !userToUpdate.password().isEmpty()) {
+            existingUser.password(passwordEncoder.encode(userToUpdate.password()));
         }
-        existingUser.setPhotoUrl(userToUpdate.getPhotoUrl());
-        existingUser.setStatus(userToUpdate.getStatus());
-        existingUser.setRole(userToUpdate.getRole());
 
         return userRepository.save(existingUser);
     }
