@@ -30,20 +30,23 @@ public class DatabaseInitializer {
     public void init() {
         userRepository.deleteAll();
 
-        MyUser admin = new MyUser();
-        admin.setName("admin");
-        admin.setEmail("admin@gmail.com");
-        admin.setUsername("admin");
-        admin.setPassword(passwordEncoder.encode("admin123"));
-        admin.setPhotoUrl(postConstructPhotos.fetchDefaultAdminPhoto());
-        admin.setPhone("1234567890");
-        admin.setAddress("Admin State");
-        admin.setStatus("Active");
-        admin.setRole("Admin");
+        MyUser admin = createAdminUser();
         userRepository.save(admin);
 
         userService.fetchContactsFromApi();
-
         log.info("Admin user initialized");
+    }
+
+    private MyUser createAdminUser() {
+        return new MyUser()
+                .name("admin")
+                .email("admin@gmail.com")
+                .username("admin")
+                .password(passwordEncoder.encode("admin123"))
+                .photoUrl(postConstructPhotos.fetchDefaultAdminPhoto())
+                .phone("1234567890")
+                .address("Admin State")
+                .status("Active")
+                .role("Admin");
     }
 }

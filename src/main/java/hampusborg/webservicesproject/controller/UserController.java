@@ -30,32 +30,29 @@ public class UserController {
 
     @PostMapping("/saveUser")
     public ResponseEntity<UserDto> saveUser(@RequestBody UserDto userDTO) {
-        try {
+        return handleUserAction(() -> {
             MyUser myUser = UserMapper.fromDto(userDTO);
             MyUser savedUser = userService.saveUser(myUser);
-            return ResponseEntity.status(HttpStatus.CREATED).body(UserMapper.toDto(savedUser));
-        } catch (Exception e) {
-            log.error("Error saving user: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
+            return UserMapper.toDto(savedUser);
+        });
     }
 
     @GetMapping("/users")
     public ResponseEntity<Page<UserDto>> getUsers(
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "12") int size) {
-        try {
+        return handleUserAction(() -> {
             Page<MyUser> myUserPage = userService.getAllUsers(page, size);
-            return ResponseEntity.ok(myUserPage.map(UserMapper::toDto));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
+            return myUserPage.map(UserMapper::toDto);
+        });
     }
 
     @GetMapping("users/{id}")
     public ResponseEntity<UserDto> getUser(@PathVariable String id) {
-        MyUser myUser = userService.getUser(id);
-        return ResponseEntity.ok(UserMapper.toDto(myUser));
+        return handleUserAction(() -> {
+            MyUser myUser = userService.getUser(id);
+            return UserMapper.toDto(myUser);
+        });
     }
 
     @DeleteMapping("users/{id}")
@@ -77,26 +74,33 @@ public class UserController {
 
     @PostMapping("/fetch")
     public ResponseEntity<String> fetchUsersFromApi() {
-        try {
+        return handleUserAction(() -> {
             userService.fetchContactsFromApi();
-            return ResponseEntity.ok("Contacts fetched successfully");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to fetch contacts from API: " + e.getMessage());
-        }
+            return "Contacts fetched successfully";
+        });
     }
+
     @PutMapping("/users/{id}")
-    public ResponseEntity<UserDto> updateUser(
-            @PathVariable String id,
-            @RequestBody UserDto userDTO) {
-        try {
-            MyUser myUser = UserMapper.fromDto(userDTO);
-            myUser.setId(id);
+    public ResponseEntity<UserDto> updateUser(@PathVariable String id, @RequestBody UserDto userDTO) {
+        return handleUserAction(() -> {
+            MyUser myUser = UserMapper.fromDto(userDTO).id(id);
             MyUser updatedUser = userService.updateUser(myUser);
-            return ResponseEntity.ok(UserMapper.toDto(updatedUser));
+            return UserMapper.toDto(updatedUser);
+        });
+    }
+
+    private <T> ResponseEntity<T> handleUserAction(UserAction<T> action) {
+        try {
+            T result = action.execute();
+            return ResponseEntity.ok(result);
         } catch (Exception e) {
-            log.error("Error updating user: {}", e.getMessage());
+            log.error("Error occurred: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
+    @FunctionalInterface
+    private interface UserAction<T> {
+        T execute() throws Exception;
+    }
 }
