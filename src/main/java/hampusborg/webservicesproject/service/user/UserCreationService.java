@@ -4,9 +4,11 @@ import hampusborg.webservicesproject.dto.ApiUserDto;
 import hampusborg.webservicesproject.mapper.UserMapper;
 import hampusborg.webservicesproject.model.MyUser;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 import java.util.Random;
 
+@Service
 public class UserCreationService {
 
     public void updateUserDetails(MyUser existingUser, MyUser userToUpdate, PasswordEncoder passwordEncoder) {
