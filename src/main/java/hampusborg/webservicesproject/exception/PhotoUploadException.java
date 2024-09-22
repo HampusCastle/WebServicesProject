@@ -5,5 +5,7 @@ public class PhotoUploadException extends RuntimeException {
         super(message);
     }
 
+    public PhotoUploadException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }
-

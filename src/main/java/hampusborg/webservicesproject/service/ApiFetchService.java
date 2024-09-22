@@ -1,37 +1,42 @@
 package hampusborg.webservicesproject.service;
 
 import hampusborg.webservicesproject.dto.ApiUserDto;
+import hampusborg.webservicesproject.exception.ApiFetchException;
 import hampusborg.webservicesproject.model.ApiUser;
-import org.springframework.http.ResponseEntity;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class ApiFetchService {
 
-    private final RestTemplate restTemplate;
-
-    public ApiFetchService(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
-    }
+    private final WebClient webClient;
 
     public List<ApiUserDto> fetchUsersFromApi(String apiUrl) {
+        ApiUser response;
         try {
-            ResponseEntity<ApiUser> response = restTemplate.getForEntity(apiUrl, ApiUser.class);
-            validateResponse(response);
-            return mapToApiUserDto(response.getBody().getResults());
-        } catch (RestClientException e) {
-            throw new RuntimeException("Error while calling API: " + e.getMessage(), e);
+            response = webClient.get()
+                    .uri(apiUrl)
+                    .retrieve()
+                    .bodyToMono(ApiUser.class)
+                    .block();
+        } catch (Exception e) {
+            throw new ApiFetchException("Error while calling API: " + e.getMessage(), e);
         }
+
+        validateResponse(response);
+        return mapToApiUserDto(response.getResults());
     }
 
-    private void validateResponse(ResponseEntity<ApiUser> response) {
-        if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
-            throw new RuntimeException("Failed to fetch data from API");
+    private void validateResponse(ApiUser response) {
+        if (response == null || response.getResults() == null || response.getResults().isEmpty()) {
+            throw new ApiFetchException("Failed to fetch data from API: No results found");
         }
     }
 

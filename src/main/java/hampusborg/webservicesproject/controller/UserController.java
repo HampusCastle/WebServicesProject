@@ -30,32 +30,26 @@ public class UserController {
 
     @PostMapping("/saveUser")
     public ResponseEntity<UserDto> saveUser(@RequestBody UserDto userDTO) {
-        return handleUserAction(() -> {
-            MyUser myUser = UserMapper.fromDto(userDTO);
-            MyUser savedUser = userService.saveUser(myUser);
-            return UserMapper.toDto(savedUser);
-        });
+        MyUser myUser = UserMapper.fromUserDto(userDTO);
+        MyUser savedUser = userService.saveUser(myUser);
+        return ResponseEntity.status(HttpStatus.CREATED).body(UserMapper.toUserDto(savedUser));
     }
 
     @GetMapping("/users")
     public ResponseEntity<Page<UserDto>> getUsers(
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "12") int size) {
-        return handleUserAction(() -> {
-            Page<MyUser> myUserPage = userService.getAllUsers(page, size);
-            return myUserPage.map(UserMapper::toDto);
-        });
+        Page<UserDto> users = userService.getAllUsers(page, size);
+        return ResponseEntity.ok(users);
     }
 
-    @GetMapping("users/{id}")
+    @GetMapping("/users/{id}")
     public ResponseEntity<UserDto> getUser(@PathVariable String id) {
-        return handleUserAction(() -> {
-            MyUser myUser = userService.getUser(id);
-            return UserMapper.toDto(myUser);
-        });
+        MyUser myUser = userService.getUser(id);
+        return ResponseEntity.ok(UserMapper.toUserDto(myUser));
     }
 
-    @DeleteMapping("users/{id}")
+    @DeleteMapping("/users/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable String id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
@@ -74,33 +68,14 @@ public class UserController {
 
     @PostMapping("/fetch")
     public ResponseEntity<String> fetchUsersFromApi() {
-        return handleUserAction(() -> {
-            userService.fetchContactsFromApi();
-            return "Contacts fetched successfully";
-        });
+        userService.fetchContactsFromApi();
+        return ResponseEntity.ok("Contacts fetched successfully");
     }
 
     @PutMapping("/users/{id}")
     public ResponseEntity<UserDto> updateUser(@PathVariable String id, @RequestBody UserDto userDTO) {
-        return handleUserAction(() -> {
-            MyUser myUser = UserMapper.fromDto(userDTO).id(id);
-            MyUser updatedUser = userService.updateUser(myUser);
-            return UserMapper.toDto(updatedUser);
-        });
-    }
-
-    private <T> ResponseEntity<T> handleUserAction(UserAction<T> action) {
-        try {
-            T result = action.execute();
-            return ResponseEntity.ok(result);
-        } catch (Exception e) {
-            log.error("Error occurred: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }
-
-    @FunctionalInterface
-    private interface UserAction<T> {
-        T execute() throws Exception;
+        MyUser myUser = UserMapper.fromUserDto(userDTO).id(id);
+        MyUser updatedUser = userService.updateUser(myUser);
+        return ResponseEntity.ok(UserMapper.toUserDto(updatedUser));
     }
 }

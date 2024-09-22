@@ -1,11 +1,15 @@
 package hampusborg.webservicesproject.mapper;
 
 import hampusborg.webservicesproject.dto.UserDto;
+import hampusborg.webservicesproject.dto.ApiUserDto;
 import hampusborg.webservicesproject.model.MyUser;
 
 public class UserMapper {
 
-    public static MyUser fromDto(UserDto dto) {
+    public static MyUser fromUserDto(UserDto dto) {
+        if (dto == null) {
+            return null;
+        }
         return new MyUser()
                 .id(dto.getId())
                 .name(dto.getName())
@@ -18,7 +22,10 @@ public class UserMapper {
                 .role(dto.getRole());
     }
 
-    public static UserDto toDto(MyUser user) {
+    public static UserDto toUserDto(MyUser user) {
+        if (user == null) {
+            return null;
+        }
         return new UserDto(
                 user.id(),
                 user.name(),
@@ -26,10 +33,24 @@ public class UserMapper {
                 user.phone(),
                 user.address(),
                 user.username(),
-                null,
+                null, 
                 user.photoUrl(),
                 user.status(),
                 user.role()
         );
+    }
+
+    public static MyUser fromApiUserDto(ApiUserDto dto) {
+        if (dto == null) {
+            return null;
+        }
+        return new MyUser()
+                .name(dto.getFirstName() + " " + dto.getLastName())
+                .email(dto.getEmail())
+                .phone(dto.getPhone())
+                .username(dto.getUsername())
+                .password(dto.getPassword())
+                .address(dto.getAddress())
+                .photoUrl(dto.getPhotoUrl());
     }
 }

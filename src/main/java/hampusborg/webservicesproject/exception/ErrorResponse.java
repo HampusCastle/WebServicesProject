@@ -1,8 +1,10 @@
 package hampusborg.webservicesproject.exception;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+@NoArgsConstructor
 public class ErrorResponse {
 
     @Getter

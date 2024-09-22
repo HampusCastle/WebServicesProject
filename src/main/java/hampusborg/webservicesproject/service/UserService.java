@@ -1,10 +1,10 @@
 package hampusborg.webservicesproject.service;
 
 import hampusborg.webservicesproject.dto.ApiUserDto;
+import hampusborg.webservicesproject.dto.UserDto;
 import hampusborg.webservicesproject.exception.ApiFetchException;
 import hampusborg.webservicesproject.exception.EntityNotFoundException;
-import hampusborg.webservicesproject.exception.PhotoUploadException;
-import hampusborg.webservicesproject.mapper.ApiUserMapper;
+import hampusborg.webservicesproject.mapper.UserMapper;
 import hampusborg.webservicesproject.model.MyUser;
 import hampusborg.webservicesproject.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,34 +27,12 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final PhotoService photoService;
     private final ApiFetchService apiFetchService;
+    private final PhotoService photoService;
 
-    @Transactional(rollbackFor = Exception.class)
-    public void fetchContactsFromApi() {
-        String apiUrl = "https://randomuser.me/api/?results=24";
-        try {
-            List<ApiUserDto> apiUserDtos = apiFetchService.fetchUsersFromApi(apiUrl);
-            if (apiUserDtos.isEmpty()) {
-                throw new ApiFetchException("API response did not contain any users");
-            }
-
-            Random random = new Random();
-            for (ApiUserDto dto : apiUserDtos) {
-                MyUser myUser = ApiUserMapper.fromApiUserDto(dto)
-                        .password(passwordEncoder.encode(dto.getPassword() != null ? dto.getPassword() : "defaultPassword"))
-                        .status(random.nextBoolean() ? "Active" : "Inactive")
-                        .role("user");
-                userRepository.save(myUser);
-            }
-        } catch (Exception e) {
-            log.error("Error during API fetch: {}", e.getMessage(), e);
-            throw new ApiFetchException("Error during API fetch: " + e.getMessage());
-        }
-    }
-
-    public Page<MyUser> getAllUsers(int page, int size) {
-        return userRepository.findAll(PageRequest.of(page, size, Sort.by("name")));
+    public Page<UserDto> getAllUsers(int page, int size) {
+        return userRepository.findAll(PageRequest.of(page, size, Sort.by("name")))
+                .map(UserMapper::toUserDto);
     }
 
     public MyUser getUser(String id) {
@@ -73,25 +51,17 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
-    public String uploadPhoto(String id, MultipartFile file) {
-        MyUser myUser = getUser(id);
-        try {
-            String photoUrl = photoService.savePhoto(id, file);
-            myUser.photoUrl(photoUrl);
-            userRepository.save(myUser);
-            return photoUrl;
-        } catch (RuntimeException e) {
-            throw new PhotoUploadException("Failed to upload photo: " + e.getMessage());
-        }
-    }
-
     @Transactional
     public MyUser updateUser(MyUser userToUpdate) {
         MyUser existingUser = userRepository.findById(userToUpdate.id())
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userToUpdate.id()));
 
-        existingUser
-                .name(userToUpdate.name())
+        updateUserDetails(existingUser, userToUpdate);
+        return userRepository.save(existingUser);
+    }
+
+    private void updateUserDetails(MyUser existingUser, MyUser userToUpdate) {
+        existingUser.name(userToUpdate.name())
                 .email(userToUpdate.email())
                 .phone(userToUpdate.phone())
                 .address(userToUpdate.address())
@@ -103,7 +73,40 @@ public class UserService {
         if (userToUpdate.password() != null && !userToUpdate.password().isEmpty()) {
             existingUser.password(passwordEncoder.encode(userToUpdate.password()));
         }
+    }
 
-        return userRepository.save(existingUser);
+    @Transactional(rollbackFor = Exception.class)
+    public void fetchContactsFromApi() {
+        String apiUrl = "https://randomuser.me/api/?results=24";
+        List<ApiUserDto> apiUserDtos = apiFetchService.fetchUsersFromApi(apiUrl);
+        if (apiUserDtos.isEmpty()) {
+            throw new ApiFetchException("API response did not contain any users");
+        }
+
+        Random random = new Random();
+        for (ApiUserDto dto : apiUserDtos) {
+            MyUser myUser = createMyUserFromDto(dto, random);
+            userRepository.save(myUser);
+        }
+    }
+
+    private MyUser createMyUserFromDto(ApiUserDto dto, Random random) {
+        return UserMapper.fromApiUserDto(dto)
+                .password(passwordEncoder.encode(dto.getPassword() != null ? dto.getPassword() : "defaultPassword"))
+                .status(random.nextBoolean() ? "Active" : "Inactive")
+                .role("user");
+    }
+
+    public String uploadPhoto(String id, MultipartFile file) {
+        MyUser myUser = getUser(id);
+        String photoUrl;
+        try {
+            photoUrl = photoService.savePhoto(id, file);
+            myUser.photoUrl(photoUrl);
+            userRepository.save(myUser);
+            return photoUrl;
+        } catch (RuntimeException e) {
+            throw new RuntimeException("Failed to upload photo: " + e.getMessage(), e);
+        }
     }
 }

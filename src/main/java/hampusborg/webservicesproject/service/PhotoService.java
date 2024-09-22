@@ -18,16 +18,26 @@ public class PhotoService {
     public String savePhoto(String id, MultipartFile file) {
         String filename = id + getFileExtension(file.getOriginalFilename());
         Path fileStorageLocation = Paths.get(PHOTO_DIRECTORY).toAbsolutePath().normalize();
+
+        createDirectoryIfNotExists(fileStorageLocation);
+
         try {
-            if (!Files.exists(fileStorageLocation)) {
-                Files.createDirectories(fileStorageLocation);
-            }
             Files.copy(file.getInputStream(), fileStorageLocation.resolve(filename));
             return ServletUriComponentsBuilder.fromCurrentContextPath()
                     .path("/images/" + filename)
                     .toUriString();
         } catch (IOException exception) {
-            throw new PhotoUploadException("Unable to save photo: " + exception.getMessage());
+            throw new PhotoUploadException("Unable to save photo: " + exception.getMessage(), exception);
+        }
+    }
+
+    private void createDirectoryIfNotExists(Path fileStorageLocation) {
+        try {
+            if (!Files.exists(fileStorageLocation)) {
+                Files.createDirectories(fileStorageLocation);
+            }
+        } catch (IOException e) {
+            throw new PhotoUploadException("Unable to create directory: " + e.getMessage(), e);
         }
     }
 
