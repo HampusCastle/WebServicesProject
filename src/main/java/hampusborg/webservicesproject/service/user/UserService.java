@@ -1,4 +1,4 @@
-package hampusborg.webservicesproject.service;
+package hampusborg.webservicesproject.service.user;
 
 import hampusborg.webservicesproject.dto.ApiUserDto;
 import hampusborg.webservicesproject.dto.UserDto;
@@ -7,6 +7,8 @@ import hampusborg.webservicesproject.exception.EntityNotFoundException;
 import hampusborg.webservicesproject.mapper.UserMapper;
 import hampusborg.webservicesproject.model.MyUser;
 import hampusborg.webservicesproject.repository.UserRepository;
+import hampusborg.webservicesproject.service.api.ApiFetchService;
+import hampusborg.webservicesproject.service.photo.PhotoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -29,6 +31,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final ApiFetchService apiFetchService;
     private final PhotoService photoService;
+    private final UserCreationService userCreationService;
 
     public Page<UserDto> getAllUsers(int page, int size) {
         return userRepository.findAll(PageRequest.of(page, size, Sort.by("name")))
@@ -56,23 +59,8 @@ public class UserService {
         MyUser existingUser = userRepository.findById(userToUpdate.id())
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userToUpdate.id()));
 
-        updateUserDetails(existingUser, userToUpdate);
+        userCreationService.updateUserDetails(existingUser, userToUpdate, passwordEncoder);
         return userRepository.save(existingUser);
-    }
-
-    private void updateUserDetails(MyUser existingUser, MyUser userToUpdate) {
-        existingUser.name(userToUpdate.name())
-                .email(userToUpdate.email())
-                .phone(userToUpdate.phone())
-                .address(userToUpdate.address())
-                .username(userToUpdate.username())
-                .photoUrl(userToUpdate.photoUrl())
-                .status(userToUpdate.status())
-                .role(userToUpdate.role());
-
-        if (userToUpdate.password() != null && !userToUpdate.password().isEmpty()) {
-            existingUser.password(passwordEncoder.encode(userToUpdate.password()));
-        }
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -85,16 +73,9 @@ public class UserService {
 
         Random random = new Random();
         for (ApiUserDto dto : apiUserDtos) {
-            MyUser myUser = createMyUserFromDto(dto, random);
+            MyUser myUser = userCreationService.createMyUserFromDto(dto, random, passwordEncoder);
             userRepository.save(myUser);
         }
-    }
-
-    private MyUser createMyUserFromDto(ApiUserDto dto, Random random) {
-        return UserMapper.fromApiUserDto(dto)
-                .password(passwordEncoder.encode(dto.getPassword() != null ? dto.getPassword() : "defaultPassword"))
-                .status(random.nextBoolean() ? "Active" : "Inactive")
-                .role("user");
     }
 
     public String uploadPhoto(String id, MultipartFile file) {

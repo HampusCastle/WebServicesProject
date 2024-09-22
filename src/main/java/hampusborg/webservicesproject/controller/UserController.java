@@ -3,7 +3,7 @@ package hampusborg.webservicesproject.controller;
 import hampusborg.webservicesproject.dto.UserDto;
 import hampusborg.webservicesproject.mapper.UserMapper;
 import hampusborg.webservicesproject.model.MyUser;
-import hampusborg.webservicesproject.service.UserService;
+import hampusborg.webservicesproject.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;

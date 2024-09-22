@@ -1,4 +1,4 @@
-package hampusborg.webservicesproject.service;
+package hampusborg.webservicesproject.service.api;
 
 import hampusborg.webservicesproject.dto.ApiUserDto;
 import hampusborg.webservicesproject.exception.ApiFetchException;

@@ -1,4 +1,4 @@
-package hampusborg.webservicesproject.service;
+package hampusborg.webservicesproject.service.photo;
 
 import hampusborg.webservicesproject.exception.PhotoUploadException;
 import org.springframework.stereotype.Service;

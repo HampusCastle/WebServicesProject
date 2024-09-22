@@ -1,9 +1,9 @@
 package hampusborg.webservicesproject.config;
 
-import hampusborg.webservicesproject.service.PostConstructPhotos;
 import hampusborg.webservicesproject.model.MyUser;
 import hampusborg.webservicesproject.repository.UserRepository;
-import hampusborg.webservicesproject.service.UserService;
+import hampusborg.webservicesproject.service.user.UserService;
+import hampusborg.webservicesproject.util.PhotoUtil;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -46,7 +46,7 @@ public class DatabaseInitializer {
                 .email("admin@gmail.com")
                 .username("admin")
                 .password(passwordEncoder.encode("admin123"))
-                .photoUrl(PostConstructPhotos.fetchDefaultAdminPhoto())
+                .photoUrl(PhotoUtil.getDefaultAdminPhoto())
                 .phone("1234567890")
                 .address("Admin State")
                 .status("Active")
