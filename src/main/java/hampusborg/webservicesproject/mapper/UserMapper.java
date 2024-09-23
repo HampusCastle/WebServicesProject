@@ -7,9 +7,8 @@ import hampusborg.webservicesproject.model.MyUser;
 public class UserMapper {
 
     public static MyUser fromUserDto(UserDto dto) {
-        if (dto == null) {
-            return null;
-        }
+        if (dto == null) return null;
+
         return new MyUser()
                 .id(dto.getId())
                 .name(dto.getName())
@@ -23,9 +22,8 @@ public class UserMapper {
     }
 
     public static UserDto toUserDto(MyUser user) {
-        if (user == null) {
-            return null;
-        }
+        if (user == null) return null;
+
         return new UserDto(
                 user.id(),
                 user.name(),
@@ -33,7 +31,7 @@ public class UserMapper {
                 user.phone(),
                 user.address(),
                 user.username(),
-                null, 
+                null,
                 user.photoUrl(),
                 user.status(),
                 user.role()
@@ -41,9 +39,8 @@ public class UserMapper {
     }
 
     public static MyUser fromApiUserDto(ApiUserDto dto) {
-        if (dto == null) {
-            return null;
-        }
+        if (dto == null) return null;
+
         return new MyUser()
                 .name(dto.getFirstName() + " " + dto.getLastName())
                 .email(dto.getEmail())

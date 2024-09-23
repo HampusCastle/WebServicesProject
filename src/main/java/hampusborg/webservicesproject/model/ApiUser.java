@@ -25,7 +25,6 @@ public class ApiUser {
         public static class Name {
             private String first;
             private String last;
-
         }
 
         @Getter
@@ -33,7 +32,6 @@ public class ApiUser {
         public static class Login {
             private String username;
             private String password;
-
         }
 
         @Getter
@@ -46,7 +44,6 @@ public class ApiUser {
             @Setter
             public static class Street {
                 private String name;
-
             }
         }
 
@@ -54,7 +51,6 @@ public class ApiUser {
         @Setter
         public static class Picture {
             private String large;
-
         }
     }
 }

@@ -16,58 +16,57 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(EntityNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseEntity<ErrorResponse> handleEntityNotFoundException(EntityNotFoundException ex) {
+    public ResponseEntity<ErrorResponse> handleEntityNotFound(EntityNotFoundException ex) {
         log.error("Entity not found: {}", ex.getMessage());
-        ErrorResponse errorResponse = new ErrorResponse("Not Found", ex.getMessage(), HttpStatus.NOT_FOUND.value());
-        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+        return buildErrorResponse("Not Found", ex.getMessage(), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
         String errorMessage = ex.getBindingResult().getAllErrors().stream()
                 .map(error -> error.getDefaultMessage())
                 .collect(Collectors.joining(", "));
         log.error("Validation error: {}", errorMessage);
-        ErrorResponse errorResponse = new ErrorResponse("Validation Error", errorMessage, HttpStatus.BAD_REQUEST.value());
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        return buildErrorResponse("Validation Error", errorMessage, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ErrorResponse> handleConstraintViolationException(ConstraintViolationException ex) {
+    public ResponseEntity<ErrorResponse> handleConstraintViolation(ConstraintViolationException ex) {
         log.error("Constraint violation: {}", ex.getMessage());
-        ErrorResponse errorResponse = new ErrorResponse("Constraint Violation", ex.getMessage(), HttpStatus.BAD_REQUEST.value());
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        return buildErrorResponse("Constraint Violation", ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(UnauthorizedAccessException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
-    public ResponseEntity<ErrorResponse> handleUnauthorizedAccessException(UnauthorizedAccessException ex) {
+    public ResponseEntity<ErrorResponse> handleUnauthorizedAccess(UnauthorizedAccessException ex) {
         log.error("Unauthorized access: {}", ex.getMessage());
-        ErrorResponse errorResponse = new ErrorResponse("Forbidden", ex.getMessage(), HttpStatus.FORBIDDEN.value());
-        return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
+        return buildErrorResponse("Forbidden", ex.getMessage(), HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler(PhotoUploadException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ResponseEntity<ErrorResponse> handlePhotoUploadException(PhotoUploadException ex) {
+    public ResponseEntity<ErrorResponse> handlePhotoUpload(PhotoUploadException ex) {
         log.error("Photo upload error: {}", ex.getMessage());
-        ErrorResponse errorResponse = new ErrorResponse("Photo Upload Error", ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
-        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+        return buildErrorResponse("Photo Upload Error", ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(ApiFetchException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ResponseEntity<ErrorResponse> handleApiFetchException(ApiFetchException ex) {
+    public ResponseEntity<ErrorResponse> handleApiFetch(ApiFetchException ex) {
         log.error("API fetch error: {}", ex.getMessage());
-        ErrorResponse errorResponse = new ErrorResponse("API Fetch Error", ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
-        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+        return buildErrorResponse("API Fetch Error", ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleException(Exception e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error: " + e.getMessage());
+    public ResponseEntity<String> handleGeneralException(Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Internal server error: " + e.getMessage());
+    }
 
+    private ResponseEntity<ErrorResponse> buildErrorResponse(String errorType, String message, HttpStatus status) {
+        ErrorResponse errorResponse = new ErrorResponse(errorType, message, status.value());
+        return new ResponseEntity<>(errorResponse, status);
     }
 }

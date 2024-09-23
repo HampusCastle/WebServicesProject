@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -44,15 +45,48 @@ public class UserController {
     }
 
     @GetMapping("/users/{id}")
-    public ResponseEntity<UserDto> getUser(@PathVariable String id) {
-        MyUser myUser = userService.getUser(id);
-        return ResponseEntity.ok(UserMapper.toUserDto(myUser));
+    public ResponseEntity<UserDto> getUserById(
+            @PathVariable String id,
+            @RequestParam(value = "status", required = false) String status) {
+        try {
+            MyUser myUser = userService.getUser(id);
+            if (status != null && !myUser.status().equalsIgnoreCase(status)) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            }
+            return ResponseEntity.ok(UserMapper.toUserDto(myUser));
+        } catch (Exception e) {
+            log.error("Error fetching user with ID {}: {}", id, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 
     @DeleteMapping("/users/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable String id) {
-        userService.deleteUser(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<String> deleteUser(
+            @PathVariable String id,
+            @RequestParam(value = "confirm", defaultValue = "false") boolean confirm) {
+
+        log.info("Attempting to delete user with ID: {}", id);
+
+        if (!confirm) {
+            return ResponseEntity.badRequest().body("Confirmation parameter is required to delete the user.");
+        }
+
+        try {
+            userService.deleteUser(id);
+            log.info("User with ID {} deleted successfully.", id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            log.error("Error deleting user with ID {}: {}", id, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to delete user: " + e.getMessage());
+        }
+    }
+
+    @PutMapping("/users/{id}")
+    public ResponseEntity<UserDto> updateUser(@PathVariable String id, @RequestBody UserDto userDTO) {
+        MyUser myUser = UserMapper.fromUserDto(userDTO).id(id);
+        MyUser updatedUser = userService.updateUser(myUser);
+        return ResponseEntity.ok(UserMapper.toUserDto(updatedUser));
     }
 
     @PostMapping("/photo")
@@ -70,12 +104,5 @@ public class UserController {
     public ResponseEntity<String> fetchUsersFromApi() {
         userService.fetchContactsFromApi();
         return ResponseEntity.ok("Contacts fetched successfully");
-    }
-
-    @PutMapping("/users/{id}")
-    public ResponseEntity<UserDto> updateUser(@PathVariable String id, @RequestBody UserDto userDTO) {
-        MyUser myUser = UserMapper.fromUserDto(userDTO).id(id);
-        MyUser updatedUser = userService.updateUser(myUser);
-        return ResponseEntity.ok(UserMapper.toUserDto(updatedUser));
     }
 }

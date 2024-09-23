@@ -21,9 +21,11 @@ public class MyUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return userRepository.findByUsername(username)
                 .map(this::mapToUserDetails)
-                .orElseThrow(() -> new UsernameNotFoundException("User with username '" + username + "' not found"));
+                .orElseThrow(() -> {
+                    System.out.println("User not found: " + username);
+                    return new UsernameNotFoundException("User with username '" + username + "' not found");
+                });
     }
-
 
     private UserDetails mapToUserDetails(MyUser myUser) {
         return new org.springframework.security.core.userdetails.User(
